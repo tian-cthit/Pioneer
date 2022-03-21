@@ -19,7 +19,12 @@ class PCA_Motor:
         self.last_rotation = None
         
     def rotate(self, speed, *argv):
-        print("motor 1")
+        """
+        Args:
+            speed: value in [0, 1], 0 for stop and 1 for full speed.
+            *argv: for multi processing, takes the 2nd return value of Pipe().
+        """
+        
         if speed < -1 or speed > 1:
             raise ValueError("invalid speed '%d', should between 0 and 1" %speed)
         
@@ -42,10 +47,9 @@ class PCA_Motor:
             self.pca.channels[self.channels[channel]].duty_cycle = 0
         self.rotation = None
         self.stop_time = time.time()
-        print("motor stop")
+        print("Motor stop")
         
     def safe_check(self, speed):
-        print("Safe checking", speed, self.rotation)
         if (speed > 0 and self.rotation == anti_clock_wise) or (speed < 0 and self.rotation == clock_wise):
             self.stop()
             print("Safe pause")

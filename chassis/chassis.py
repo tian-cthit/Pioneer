@@ -28,7 +28,7 @@ class Chassis:
         
         speed = self.gear_speed_map[gear]
             
-        self.left_move = Process(target=self.left_motor.rotate, args=(-speed, self.child_conn_left))
+        self.left_move = Process(target=self.left_motor.rotate, args=(-speed, self.child_conn_left))    # left motor moves anti-clockwise when chassis move forward and vice versa
         self.right_move = Process(target=self.right_motor.rotate, args=(speed, self.child_conn_right))
         self.left_move.start()
         self.right_move.start()

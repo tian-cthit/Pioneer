@@ -7,14 +7,19 @@ padel_forward = 3
 padel_backward = -2
 
 class RemoteController:
-    def __init__(self, chassis):
+    def __init__(self, chassis, turret, main_gun):
         self.camera_view = None
         
         self.chassis = chassis
+        self.turret = turret
+        self.main_gun = main_gun
         
         self._func_keys_press = {}
         self._func_keys_release = {}
+        
         self.flag_remote_control = 0
+        self.flag_fire = 0
+        
         self.gear = 0
         self.padel = 0
         self.time = None
@@ -53,26 +58,37 @@ class RemoteController:
         postion = (0, 1, 1, 1)
         self._grid.add_widget(camera_view, *postion)
 
-
-
     def list_hotkeys(self):
-        
         self._func_keys_press["escape"] = {"func": "_close_ui", "desc": "Close UI"}
         self._func_keys_press["o"] = {"func": "remote_control_mode", "desc": "Switch to remote control mode"}
         self._func_keys_press["p"] = {"func": "autonomous_mode", "desc": "Switch to autonomous mode"}
         
         self._func_keys_press["w"] = {"func": "padel_forward", "desc": "Move forward with full speed"}
         self._func_keys_press["s"] = {"func": "padel_backward", "desc": "Move backward with full speed"}
-        self._func_keys_press["a"] = {"func": "turn_left", "desc": "turn left"}
-        self._func_keys_press["d"] = {"func": "turn_right", "desc": "turn right"}
+        self._func_keys_press["a"] = {"func": "turn_left", "desc": "Turn left"}
+        self._func_keys_press["d"] = {"func": "turn_right", "desc": "Turn right"}
         
         self._func_keys_press["r"] = {"func": "gear_puls_one", "desc": "switch to a higher gear"}
         self._func_keys_press["f"] = {"func": "gear_minus_one", "desc": "switch to a lower gear"}
+        
+#         self._func_keys_press["up"] = {"func": "main_gun_up", "desc": "Main gun up"}
+#         self._func_keys_press["down"] = {"func": "main_gun_down", "desc": "Main gun down"}
+        self._func_keys_press["left"] = {"func": "turret_rotate_left", "desc": "Turret turns left"}
+        self._func_keys_press["right"] = {"func": "turret_rotate_right", "desc": "Turret turns right"}
+        
+        self._func_keys_press["space"] = {"func": "fire", "desc": "Fire/Cease fire"}
 
-        self._func_keys_release["w"] = {"func": "padel_release", "desc": "release padel"}
-        self._func_keys_release["s"] = {"func": "padel_release", "desc": "release padel"}
-        self._func_keys_release["a"] = {"func": "stop_turning", "desc": "stop turning"}
-        self._func_keys_release["d"] = {"func": "stop_turning", "desc": "stop turning"}
+        self._func_keys_release["w"] = {"func": "padel_release", "desc": "Release padel"}
+        self._func_keys_release["s"] = {"func": "padel_release", "desc": "Release padel"}
+        self._func_keys_release["a"] = {"func": "stop_turning", "desc": "Stop turning"}
+        self._func_keys_release["d"] = {"func": "stop_turning", "desc": "Stop turning"}
+        
+#         self._func_keys_release["up"] = {"func": "main_gun_stop", "desc": "Main gun stop moving"}
+#         self._func_keys_release["down"] = {"func": "main_gun_stop", "desc": "Main gun stop moving"}
+        self._func_keys_release["left"] = {"func": "turret_stop", "desc": "Turret stop moving"}
+        self._func_keys_release["right"] = {"func": "turret_stop", "desc": "Turret stop moving"}
+        
+        self._func_keys_release["p"] = {"func": "stop_all", "desc": "Stop all acuators"}
 
         for key, action in self._func_keys_press.items():
             print("{}{}".format(key.ljust(15, "."), " ".join(action["desc"].split("_"))))
@@ -80,26 +96,20 @@ class RemoteController:
     def key_press_handler(self, event):
         key_string = event.key.name.lower()
         if key_string in self._func_keys_press.keys():
-            if len(key_string) > 1:
-                getattr(self, self._func_keys_press[key_string]["func"])(key_string)
-            else:
-                getattr(self, self._func_keys_press[key_string]["func"])()
+            getattr(self, self._func_keys_press[key_string]["func"])()
         else:
             print(f"You pressed: {key_string} which is not an valid key.")
 
     def key_release_handler(self, event):
         key_string = event.key.name.lower()
         if key_string in self._func_keys_release.keys():
-            if len(key_string) > 1:
-                getattr(self, self._func_keys_release[key_string]["func"])(key_string)
-            else:
-                getattr(self, self._func_keys_release[key_string]["func"])()
+            getattr(self, self._func_keys_release[key_string]["func"])()
 
     def add_event(self, event_name, event_handle):
         if event_name in self._canvas.events:
             getattr(self._canvas.events, event_name).connect(event_handle)
             
-    def _close_ui():
+    def _close_ui(self):
         print("Closing UI...")
         self._canvas.close()
             
@@ -201,15 +211,38 @@ class RemoteController:
             print("Turning right")
     
     def stop_turning(self):
-        if self.padel:
-            self.chassis.move(self.padel)
-        elif self.gear:
-            self.chassis.move(self.gear)
-        else:
-            self.chassis.stop()
+        if self.flag_remote_control == 1:
+            if self.padel:
+                self.chassis.move(self.padel)
+            elif self.gear:
+                self.chassis.move(self.gear)
+            else:
+                self.chassis.stop()
+    
+    def turret_rotate_left(self):
+        if self.flag_remote_control == 1:
+            self.turret.rotate(-1)
+    
+    def turret_rotate_right(self):
+        if self.flag_remote_control == 1:
+            self.turret.rotate(1)
+    
+    def turret_stop(self):
+        if self.flag_remote_control == 1:
+            self.turret.stop()
+        
+    def fire(self):
+        if self.flag_remote_control == 1:
+            if self.flag_fire == 0:
+                self.flag_fire = 1
+                self.main_gun.fire()
+            else:
+                self.flag_fire = 0
+                self.main_gun.cease_fire()
 
-    def _close_fig(self, key):
-        """Close open figure to finish visualisation."""
-        print("pressed: {}. Closing visualisation...".format(key))
-        self._canvas.close()
+    def stop_all(self):
+        print("Stopping all actuators...")
+        self.chassis.stop()
+        self.turret.stop()
+        self.main_gun.cease_fire()
 
