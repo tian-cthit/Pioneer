@@ -1,7 +1,4 @@
-import busio
 import time
-from board import SCL, SDA
-from adafruit_pca9685 import PCA9685
 
 speed_hex_max = 0xFFFF
 clock_wise = "clock_wise"
@@ -10,10 +7,8 @@ anti_clock_wise = "anti_clock_wise"
 class PCA_Motor:
     """ Basic motor behaviours. """
     
-    def __init__(self, channels, frequency=60):
-        self.i2c_bus = busio.I2C(SCL, SDA)
-        self.pca = PCA9685(self.i2c_bus)
-        self.pca.frequency = frequency
+    def __init__(self, PCA, channels):
+        self.pca = PCA
         self.channels = channels
         self.rotation = None
         self.last_rotation = None

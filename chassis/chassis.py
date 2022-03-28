@@ -4,12 +4,12 @@ from chassis.motor import PCA_Motor
 class Chassis:
     """Class for basic motor motion and keyboard control behaviour. """
     
-    def __init__(self):
+    def __init__(self, PCA):
         self.left_channels = {"channel_clockwise":0, "channel_anti_clockwise":1}
         self.right_channels = {"channel_clockwise":2, "channel_anti_clockwise":3}
         
-        self.left_motor = PCA_Motor(self.left_channels)
-        self.right_motor = PCA_Motor(self.right_channels)
+        self.left_motor = PCA_Motor(PCA, self.left_channels)
+        self.right_motor = PCA_Motor(PCA, self.right_channels)
         
         self.gear_speed_map_f = {1: 0.8, 2: 0.9, 3: 1}
         self.gear_speed_map_b = {-1: -0.8, -2: -1}

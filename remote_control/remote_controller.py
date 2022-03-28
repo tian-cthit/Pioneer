@@ -71,8 +71,8 @@ class RemoteController:
         self._func_keys_press["r"] = {"func": "gear_puls_one", "desc": "switch to a higher gear"}
         self._func_keys_press["f"] = {"func": "gear_minus_one", "desc": "switch to a lower gear"}
         
-#         self._func_keys_press["up"] = {"func": "main_gun_up", "desc": "Main gun up"}
-#         self._func_keys_press["down"] = {"func": "main_gun_down", "desc": "Main gun down"}
+        self._func_keys_press["up"] = {"func": "main_gun_up", "desc": "Main gun up"}
+        self._func_keys_press["down"] = {"func": "main_gun_down", "desc": "Main gun down"}
         self._func_keys_press["left"] = {"func": "turret_rotate_left", "desc": "Turret turns left"}
         self._func_keys_press["right"] = {"func": "turret_rotate_right", "desc": "Turret turns right"}
         
@@ -83,8 +83,8 @@ class RemoteController:
         self._func_keys_release["a"] = {"func": "stop_turning", "desc": "Stop turning"}
         self._func_keys_release["d"] = {"func": "stop_turning", "desc": "Stop turning"}
         
-#         self._func_keys_release["up"] = {"func": "main_gun_stop", "desc": "Main gun stop moving"}
-#         self._func_keys_release["down"] = {"func": "main_gun_stop", "desc": "Main gun stop moving"}
+        self._func_keys_release["up"] = {"func": "main_gun_up_stop", "desc": "Main gun stop moving"}
+        self._func_keys_release["down"] = {"func": "main_gun_down_stop", "desc": "Main gun stop moving"}
         self._func_keys_release["left"] = {"func": "turret_stop", "desc": "Turret stop moving"}
         self._func_keys_release["right"] = {"func": "turret_stop", "desc": "Turret stop moving"}
         
@@ -98,7 +98,7 @@ class RemoteController:
         if key_string in self._func_keys_press.keys():
             getattr(self, self._func_keys_press[key_string]["func"])()
         else:
-            print(f"You pressed: {key_string} which is not an valid key.")
+            print(f"You pressed: {key_string} which is not a valid key.")
 
     def key_release_handler(self, event):
         key_string = event.key.name.lower()
@@ -230,6 +230,18 @@ class RemoteController:
     def turret_stop(self):
         if self.flag_remote_control == 1:
             self.turret.stop()
+            
+    def main_gun_up(self):
+        self.main_gun.pitch_up()
+        
+    def main_gun_down(self):
+        self.main_gun.pitch_down()
+    
+    def main_gun_up_stop(self):
+        self.main_gun.pitch_up_stop()
+        
+    def main_gun_down_stop(self):
+        self.main_gun.pitch_down_stop()
         
     def fire(self):
         if self.flag_remote_control == 1:
@@ -244,5 +256,7 @@ class RemoteController:
         print("Stopping all actuators...")
         self.chassis.stop()
         self.turret.stop()
+        self.main_gun.pitch_stop()
         self.main_gun.cease_fire()
+        
 
