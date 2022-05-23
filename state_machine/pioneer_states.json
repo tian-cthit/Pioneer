@@ -1,0 +1,6 @@
+{
+  "idle": ["manual", "cruise"],
+  "manual": ["cruise","idle"],
+  "cruise": ["manual", "engage", "idle"],
+  "engage": ["manual", "cruise", "idle"]
+}
